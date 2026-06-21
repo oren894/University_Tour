@@ -1,0 +1,126 @@
+package game;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import javax.swing.JOptionPane;
+import players.Player;
+import players.HumanPlayer;
+import cards.EventCard;
+import cards.BonusCard;
+import cards.PenaltyCard;
+import exceptions.InvalidPlayerCountException;
+
+public class Game {
+    private ArrayList<Player> players;
+    private Board board;
+    private Dice dice;
+    private boolean gameOver;
+    private int maxRounds = 20;
+    private int currentRound = 0;
+
+    public Game() {
+        players = new ArrayList<>();
+        dice = new Dice();
+    }
+
+    public void start() {
+        try {
+            setupCards();
+            setupPlayers();
+            playLoop();
+            showResults();
+        } catch (InvalidPlayerCountException e) {
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+        }
+    }
+
+    private void setupCards() {
+        ArrayList<EventCard> chanceDeck = new ArrayList<>();
+        chanceDeck.add(new BonusCard("Scholarship awarded — collect ₪50,000", 50_000));
+        chanceDeck.add(new BonusCard("Won the hackathon — collect ₪100,000", 100_000));
+        chanceDeck.add(new BonusCard("Research grant approved — collect ₪75,000", 75_000));
+        chanceDeck.add(new BonusCard("Tuition reimbursement — collect ₪40,000", 40_000));
+        chanceDeck.add(new BonusCard("Dean's list bonus — collect ₪30,000", 30_000));
+        chanceDeck.add(new PenaltyCard("Lab equipment fine — pay ₪20,000", 20_000));
+        chanceDeck.add(new PenaltyCard("Library late fees — pay ₪10,000", 10_000));
+        chanceDeck.add(new PenaltyCard("Parking ticket on campus — pay ₪15,000", 15_000));
+        chanceDeck.add(new PenaltyCard("Failed experiment — pay ₪25,000", 25_000));
+        chanceDeck.add(new PenaltyCard("Mandatory campus fund — pay ₪50,000", 50_000));
+
+        board = new Board(chanceDeck);
+    }
+
+    private void setupPlayers() throws InvalidPlayerCountException {
+        String input = JOptionPane.showInputDialog("How many players? (2-4):");
+        if (input == null) throw new InvalidPlayerCountException("No input provided.");
+        int count;
+        try {
+            count = Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            throw new InvalidPlayerCountException("Enter a number between 2 and 4.");
+        }
+        if (count < 2 || count > 4)
+            throw new InvalidPlayerCountException("Player count must be 2-4, got: " + count);
+
+        for (int i = 0; i < count; i++) {
+            String name = JOptionPane.showInputDialog("Enter name for Player " + (i + 1) + ":");
+            if (name == null || name.trim().isEmpty())
+                name = "Player " + (i + 1);
+            players.add(new HumanPlayer(name.trim(), 2_000_000));
+        }
+    }
+
+    private void playLoop() {
+        while (!gameOver) {
+            currentRound++;
+            for (Player p : players) {
+                if (!p.isBankrupt()) {
+                    p.takeTurn(board, dice);
+                }
+                checkGameOver();
+                if (gameOver) break;
+            }
+        }
+    }
+
+    private void checkGameOver() {
+        long active = players.stream().filter(p -> !p.isBankrupt()).count();
+        if (active <= 1 || currentRound >= maxRounds) {
+            gameOver = true;
+        }
+    }
+
+    private void showResults() {
+        sortByWealth();
+        StringBuilder sb = new StringBuilder("=== FINAL RESULTS ===\n\n");
+        for (int i = 0; i < players.size(); i++) {
+            sb.append((i + 1)).append(". ").append(players.get(i)).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, sb.toString(), "Game Over", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void addPlayer(Player p) { players.add(p); }
+
+    public void removePlayer(Player p) { players.remove(p); }
+
+    public void printPlayers() {
+        players.forEach(System.out::println);
+    }
+
+    public Player findPlayer(String name) {
+        return players.stream()
+            .filter(p -> p.getName().equalsIgnoreCase(name))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public void sortByWealth() {
+        Collections.sort(players);
+    }
+
+    public ArrayList<Player> clonePlayers() throws CloneNotSupportedException {
+        ArrayList<Player> copy = new ArrayList<>();
+        for (Player p : players) copy.add(p.clone());
+        return copy;
+    }
+}
