@@ -31,7 +31,7 @@ public abstract class Player implements Comparable<Player>, Cloneable {
 
     public void pay(int amount) throws InsufficientFundsException {
         if (money < amount) throw new InsufficientFundsException(
-            name + " cannot afford ₪" + amount + " (has ₪" + money + ")");
+            name + " cannot afford ₪" + String.format("%,d", amount) + " (has ₪" + String.format("%,d", money) + ")");
         money -= amount;
     }
 
@@ -51,6 +51,21 @@ public abstract class Player implements Comparable<Player>, Cloneable {
         ownedStations.add(s);
     }
 
+    public void sellProperty(tiles.PropertyTile pt) {
+        int value = pt.getSellValue();
+        ownedProperties.remove(pt);
+        pt.setOwner(null);
+        pt.setLevel(0);
+        money += value;
+    }
+
+    public void sellStation(ShuttleStationTile st) {
+        int value = st.getSellValue();
+        ownedStations.remove(st);
+        st.setOwner(null);
+        money += value;
+    }
+
     public ArrayList<ShuttleStationTile> getOwnedStations() { return ownedStations; }
 
     @Override
@@ -68,7 +83,7 @@ public abstract class Player implements Comparable<Player>, Cloneable {
 
     @Override
     public String toString() {
-        return name + " | ₪" + money + " | pos:" + position + (bankrupt ? " [BANKRUPT]" : "");
+        return name + " | ₪" + String.format("%,d", money) + " | pos:" + position + (bankrupt ? " [BANKRUPT]" : "");
     }
 
     public String getName() { return name; }

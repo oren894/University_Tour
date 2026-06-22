@@ -15,7 +15,7 @@ public class JailTile implements Tile {
         if (player instanceof HumanPlayer) {
             JOptionPane.showMessageDialog(null,
                 player.getName() + " landed on Jail — stuck for 3 turns!\n"
-                + "Each turn: pay ₪50,000 fine to escape, or roll doubles.",
+                + "Each turn: pay ₪200,000 fine to escape, or roll doubles.",
                 "Jail!", JOptionPane.WARNING_MESSAGE);
         }
     }

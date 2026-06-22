@@ -14,7 +14,6 @@ public class GameWindow extends JFrame {
     public GameWindow() {
         setTitle("Business Tour");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
 
         boardPanel = new BoardPanel();
         sidePanel  = new SidebarPanel();
@@ -26,8 +25,7 @@ public class GameWindow extends JFrame {
         root.add(sidePanel,  BorderLayout.EAST);
 
         add(root);
-        pack();
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         game = new GUIGame(this);
         sidePanel.setGame(game);

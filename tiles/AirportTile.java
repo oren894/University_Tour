@@ -30,8 +30,8 @@ public class AirportTile implements Tile {
 
         if (player.getMoney() < TOLL) {
             JOptionPane.showMessageDialog(null,
-                "Airport: You need ₪" + TOLL + " for the toll, but you only have ₪"
-                + player.getMoney() + ". Turn ends.",
+                "Airport: You need ₪" + String.format("%,d", TOLL) + " for the toll, but you only have ₪"
+                + String.format("%,d", player.getMoney()) + ". Turn ends.",
                 "Airport", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -66,7 +66,7 @@ public class AirportTile implements Tile {
 
         String[] options = destinations.keySet().toArray(new String[0]);
         Object result = JOptionPane.showInputDialog(null,
-            "Airport! Pay ₪" + TOLL + " to teleport.\nYour money: ₪" + player.getMoney()
+            "Airport! Pay ₪" + String.format("%,d", TOLL) + " to teleport.\nYour money: ₪" + String.format("%,d", player.getMoney())
             + "\n\nChoose your destination:",
             "Airport — Free Travel", JOptionPane.QUESTION_MESSAGE,
             null, options, options[0]);
@@ -89,7 +89,7 @@ public class AirportTile implements Tile {
         player.setPosition(destIndex);
 
         JOptionPane.showMessageDialog(null,
-            "Paid ₪" + TOLL + " — teleporting to " + tiles.get(destIndex).getName() + "!",
+            "Paid ₪" + String.format("%,d", TOLL) + " — teleporting to " + tiles.get(destIndex).getName() + "!",
             "Airport", JOptionPane.INFORMATION_MESSAGE);
 
         tiles.get(destIndex).landOn(player);

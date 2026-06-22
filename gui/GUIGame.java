@@ -2,7 +2,6 @@ package gui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import game.Board;
@@ -12,6 +11,7 @@ import players.HumanPlayer;
 import players.BotPlayer;
 import tiles.*;
 import cards.EventCard;
+import cards.PenaltyCard;
 import exceptions.InsufficientFundsException;
 
 public class GUIGame {
@@ -26,7 +26,7 @@ public class GUIGame {
     private final Dice dice = new Dice();
     private int currentPlayerIndex = 0;
     private int currentRound = 1;
-    private final int maxRounds = 20;
+    private final int maxRounds = Integer.MAX_VALUE;
     private State state = State.WAITING_ROLL;
 
     private PropertyTile                  pendingProperty;
@@ -131,14 +131,14 @@ public class GUIGame {
             if (p instanceof HumanPlayer) {
                 int choice = JOptionPane.showOptionDialog(window,
                     p.getName() + " is in JAIL! (" + p.getJailTurnsLeft() + " turn(s) remaining)\n"
-                    + "Pay ₪50,000 to escape now, or roll for doubles?",
+                    + "Pay ₪200,000 to escape now, or roll for doubles?",
                     "Jail", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    null, new Object[]{"Pay ₪50,000 & Roll", "Roll for Doubles"}, "Roll for Doubles");
+                    null, new Object[]{"Pay ₪200,000 & Roll", "Roll for Doubles"}, "Roll for Doubles");
                 if (choice == 0) {
                     try {
-                        p.pay(50_000);
+                        p.pay(200_000);
                         p.releaseFromJail();
-                        window.log(p.getName() + " paid ₪50,000 — released from jail!");
+                        window.log(p.getName() + " paid ₪200,000 — released from jail!");
                         window.updateSidebar();
                     } catch (exceptions.InsufficientFundsException e) {
                         window.log(p.getName() + " can't afford the fine — rolling for doubles.");
@@ -147,8 +147,8 @@ public class GUIGame {
             }
         }
 
-        int d1 = new Random().nextInt(6) + 1;
-        int d2 = new Random().nextInt(6) + 1;
+        int d1 = new java.util.Random().nextInt(6) + 1;
+        int d2 = new java.util.Random().nextInt(6) + 1;
         int roll = d1 + d2;
         boolean doubles = (d1 == d2);
 
@@ -165,11 +165,11 @@ public class GUIGame {
                 p.decrementJailTurns();
                 int left = p.getJailTurnsLeft();
                 if (left <= 0) {
-                    try { p.pay(50_000); } catch (exceptions.InsufficientFundsException e) {
-                        p.setBankrupt(true);
+                    if (!tryForcePay(p, 200_000)) {
+                        window.log(p.getName() + " couldn't pay the jail fine — bankrupt!");
                     }
                     p.releaseFromJail();
-                    window.log(p.getName() + " served 3 turns — forced out, ₪50,000 fine paid.");
+                    if (!p.isBankrupt()) window.log(p.getName() + " served 3 turns — forced out, ₪200,000 fine paid.");
                 } else {
                     window.log(p.getName() + " stays in jail. " + left + " turn(s) left.");
                     window.updateSidebar();
@@ -243,6 +243,22 @@ public class GUIGame {
         } else if (tile instanceof StartTile) {
             p.receive(200_000);
             window.log(p.getName() + " landed on Start — collected ₪200,000!");
+            if (p instanceof HumanPlayer) {
+                window.updateSidebar();
+                RouletteDialog rd = new RouletteDialog(window, p);
+                rd.setVisible(true);
+                int net = rd.getNetResult();
+                if (net > 0) {
+                    p.receive(net);
+                    window.log(p.getName() + " won ₪" + String.format("%,d", net) + " at the casino!");
+                } else if (net < 0) {
+                    if (tryForcePay(p, -net)) {
+                        window.log(p.getName() + " lost ₪" + String.format("%,d", -net) + " at the casino.");
+                    } else {
+                        window.log(p.getName() + " went bankrupt at the casino!");
+                    }
+                }
+            }
             window.updateSidebar();
             endTurn();
 
@@ -267,14 +283,12 @@ public class GUIGame {
                 }
             } else if (!st.getOwner().equals(p)) {
                 int rent = st.getCurrentRent();
-                try {
-                    p.pay(rent);
+                if (tryForcePay(p, rent)) {
                     st.getOwner().receive(rent);
-                    window.log(p.getName() + " paid ₪" + rent + " shuttle rent → "
+                    window.log(p.getName() + " paid ₪" + String.format("%,d", rent) + " shuttle rent → "
                         + st.getOwner().getName()
                         + "  (" + st.getOwner().getOwnedStations().size() + " station(s))");
-                } catch (InsufficientFundsException e) {
-                    p.setBankrupt(true);
+                } else {
                     window.log(p.getName() + " went bankrupt on shuttle rent!");
                 }
                 window.updateSidebar();
@@ -295,8 +309,13 @@ public class GUIGame {
             window.updateSidebar();
             endTurn();
 
+        } else if (tile instanceof tiles.JailTile) {
+            p.sendToJail();
+            window.log(p.getName() + " landed on Jail — stuck for 3 turns!");
+            window.updateSidebar();
+            endTurn();
         } else {
-            endTurn(); // Jail (visiting)
+            endTurn();
         }
     }
 
@@ -378,8 +397,17 @@ public class GUIGame {
         if (state != State.WAITING_COLLECT || pendingEventCard == null) return;
         Player p = getCurrentPlayer();
 
-        pendingEventCard.apply(p);
-        window.log("Collected: " + pendingEventCard.getDescription());
+        if (pendingEventCard instanceof PenaltyCard) {
+            int cost = ((PenaltyCard) pendingEventCard).getAmount();
+            if (tryForcePay(p, cost)) {
+                window.log("Paid: " + pendingEventCard.getDescription());
+            } else {
+                window.log(p.getName() + " went bankrupt on event card!");
+            }
+        } else {
+            pendingEventCard.apply(p);
+            window.log("Collected: " + pendingEventCard.getDescription());
+        }
         if (p.isBankrupt()) window.log(p.getName() + " went bankrupt!");
 
         pendingEventCard = null;
@@ -398,7 +426,7 @@ public class GUIGame {
             pt.setLevel(targetLevel);
             p.addProperty(pt);
             window.log(p.getName() + " bought " + pt.getName()
-                + " (" + pt.getLevelName() + ") for $" + cost);
+                + " (" + pt.getLevelName() + ") for ₪" + String.format("%,d", cost));
         } catch (InsufficientFundsException e) {
             window.log(p.getName() + " can't afford " + pt.getName());
         }
@@ -407,16 +435,37 @@ public class GUIGame {
 
     private void chargeRent(Player p, PropertyTile pt) {
         int rent = pt.getRent();
-        try {
-            p.pay(rent);
+        if (tryForcePay(p, rent)) {
             pt.getOwner().receive(rent);
-            window.log(p.getName() + " paid $" + rent + " rent to "
+            window.log(p.getName() + " paid ₪" + String.format("%,d", rent) + " rent to "
                 + pt.getOwner().getName() + "  [" + pt.getName() + " — " + pt.getLevelName() + "]");
-        } catch (InsufficientFundsException e) {
-            p.setBankrupt(true);
+        } else {
             window.log(p.getName() + " went bankrupt paying rent on " + pt.getName() + "!");
         }
         window.updateSidebar();
+    }
+
+    private boolean tryForcePay(Player p, int amount) {
+        try {
+            p.pay(amount);
+            return true;
+        } catch (InsufficientFundsException e) {
+            if (p.getOwnedProperties().isEmpty() && p.getOwnedStations().isEmpty()) {
+                p.setBankrupt(true);
+                return false;
+            }
+            window.log(p.getName() + " is ₪" + String.format("%,d", amount - p.getMoney())
+                + " short — may sell properties.");
+            SellPropertiesDialog dlg = new SellPropertiesDialog(window, p, amount);
+            dlg.setVisible(true);
+            try {
+                p.pay(amount);
+                return true;
+            } catch (InsufficientFundsException e2) {
+                p.setBankrupt(true);
+                return false;
+            }
+        }
     }
 
     private void endTurn() {
@@ -424,14 +473,13 @@ public class GUIGame {
         window.updateSidebar();
 
         long active = players.stream().filter(pl -> !pl.isBankrupt()).count();
-        if (active <= 1 || currentRound >= maxRounds) { endGame(); return; }
+        if (active <= 1) { endGame(); return; }
 
         int next = (currentPlayerIndex + 1) % players.size();
         while (players.get(next).isBankrupt()) next = (next + 1) % players.size();
         if (next <= currentPlayerIndex) currentRound++;
         currentPlayerIndex = next;
 
-        if (currentRound > maxRounds) { endGame(); return; }
         beginTurn();
     }
 
@@ -443,7 +491,7 @@ public class GUIGame {
         for (int i = players.size() - 1; i >= 0; i--) {
             Player p = players.get(i);
             window.log((players.size() - i) + ". " + p.getName()
-                + " — $" + p.getMoney() + (p.isBankrupt() ? " [BANKRUPT]" : ""));
+                + " — ₪" + String.format("%,d", p.getMoney()) + (p.isBankrupt() ? " [BANKRUPT]" : ""));
         }
         window.showGameOver();
         window.updateSidebar();
