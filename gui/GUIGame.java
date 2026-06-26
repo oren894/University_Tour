@@ -42,25 +42,19 @@ public class GUIGame {
     public void start() { setupCards(); setupPlayers(); }
 
     private void setupCards() {
-        ArrayList<EventCard> chest = new ArrayList<>();
-        chest.add(new cards.BonusCard("Bank pays you dividend — collect $50", 50));
-        chest.add(new cards.BonusCard("You won second prize in beauty contest — collect $10", 10));
-        chest.add(new cards.BonusCard("Income tax refund — collect $20", 20));
-        chest.add(new cards.BonusCard("You inherit $100", 100));
-        chest.add(new cards.BonusCard("From sale of stock you get $45", 45));
-        chest.add(new cards.PenaltyCard("Doctor's fee — pay $50", 50));
-        chest.add(new cards.PenaltyCard("Pay school fees of $150", 150));
-        chest.add(new cards.PenaltyCard("Pay hospital fees of $100", 100));
-
         ArrayList<EventCard> chance = new ArrayList<>();
-        chance.add(new cards.BonusCard("Your building loan matures — collect $150", 150));
-        chance.add(new cards.BonusCard("You won a crossword competition — collect $100", 100));
-        chance.add(new cards.BonusCard("Bank pays you dividend of $50", 50));
-        chance.add(new cards.BonusCard("You are assessed for street repairs — collect $50", 50));
-        chance.add(new cards.PenaltyCard("Pay poor tax of $15", 15));
-        chance.add(new cards.PenaltyCard("Speeding fine — pay $15", 15));
-        chance.add(new cards.PenaltyCard("Make general repairs — pay $25", 25));
-        chance.add(new cards.PenaltyCard("Pay school tax of $150", 150));
+        chance.add(new cards.BonusCard("Scholarship awarded — collect ₪100,000", 100_000));
+        chance.add(new cards.BonusCard("Won the hackathon — collect ₪150,000", 150_000));
+        chance.add(new cards.BonusCard("Research grant approved — collect ₪75,000", 75_000));
+        chance.add(new cards.BonusCard("Tuition reimbursement — collect ₪80,000", 80_000));
+        chance.add(new cards.BonusCard("Dean's list bonus — collect ₪50,000", 50_000));
+        chance.add(new cards.BonusCard("TA salary payment — collect ₪60,000", 60_000));
+        chance.add(new cards.PenaltyCard("Lab equipment fine — pay ₪40,000", 40_000));
+        chance.add(new cards.PenaltyCard("Library late fees — pay ₪30,000", 30_000));
+        chance.add(new cards.PenaltyCard("Parking ticket on campus — pay ₪25,000", 25_000));
+        chance.add(new cards.PenaltyCard("Failed experiment — pay ₪50,000", 50_000));
+        chance.add(new cards.PenaltyCard("Mandatory campus fund — pay ₪75,000", 75_000));
+        chance.add(new cards.PenaltyCard("Disciplinary committee fine — pay ₪60,000", 60_000));
 
         board = new Board(chance);
     }
@@ -434,11 +428,12 @@ public class GUIGame {
     }
 
     private void chargeRent(Player p, PropertyTile pt) {
-        int rent = pt.getRent();
+        int rent = pt.getRent() * pt.getWCMultiplier();
+        String wcNote = pt.getWCMultiplier() > 1 ? " [WC x" + pt.getWCMultiplier() + "]" : "";
         if (tryForcePay(p, rent)) {
             pt.getOwner().receive(rent);
             window.log(p.getName() + " paid ₪" + String.format("%,d", rent) + " rent to "
-                + pt.getOwner().getName() + "  [" + pt.getName() + " — " + pt.getLevelName() + "]");
+                + pt.getOwner().getName() + "  [" + pt.getName() + " — " + pt.getLevelName() + "]" + wcNote);
         } else {
             window.log(p.getName() + " went bankrupt paying rent on " + pt.getName() + "!");
         }
