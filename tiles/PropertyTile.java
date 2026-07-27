@@ -70,7 +70,7 @@ public class PropertyTile implements Tile {
         if (options.length <= 1) return; // only "Skip" — can't afford anything
 
         Object result = JOptionPane.showInputDialog(null,
-            name + " is for sale!\nYour money: ₪" + player.getMoney() + "\n\nChoose a level:",
+            name + " is for sale!\nYour money: ₪" + String.format("%,d", player.getMoney()) + "\n\nChoose a level:",
             "Buy Property?", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
         if (result == null) return;
@@ -93,7 +93,7 @@ public class PropertyTile implements Tile {
         for (int i = 0; i < 4; i++) {
             if (i == 3 && !canBuy3) continue; // locked first lap
             if (player.getMoney() >= costs[i]) {
-                opts.add(labels[i] + " — ₪" + costs[i] + "  (rent ₪" + rentByLevel[i] + ")");
+                opts.add(labels[i] + " — ₪" + String.format("%,d", costs[i]) + "  (rent ₪" + String.format("%,d", rentByLevel[i]) + ")");
             }
         }
         opts.add("Skip");
@@ -109,7 +109,7 @@ public class PropertyTile implements Tile {
             player.addProperty(this);
             if (player instanceof HumanPlayer) {
                 JOptionPane.showMessageDialog(null,
-                    player.getName() + " bought " + name + " (" + getLevelName() + ") for ₪" + cost + "!");
+                    player.getName() + " bought " + name + " (" + getLevelName() + ") for ₪" + String.format("%,d", cost) + "!");
             }
         } catch (InsufficientFundsException e) {
             if (player instanceof HumanPlayer) {
@@ -135,15 +135,15 @@ public class PropertyTile implements Tile {
 
         if (player.getMoney() < cost) {
             JOptionPane.showMessageDialog(null,
-                "You own " + name + " (" + getLevelName() + ") — can't afford upgrade (₪" + cost + ").");
+                "You own " + name + " (" + getLevelName() + ") — can't afford upgrade (₪" + String.format("%,d", cost) + ").");
             return;
         }
 
         int choice = JOptionPane.showConfirmDialog(null,
             "You own " + name + " (" + getLevelName() + ")\n"
-            + "Upgrade to " + nextLvl + " for ₪" + cost + "?\n"
-            + "New rent: ₪" + rentByLevel[level + 1] + "\n"
-            + "Your money: ₪" + player.getMoney(),
+            + "Upgrade to " + nextLvl + " for ₪" + String.format("%,d", cost) + "?\n"
+            + "New rent: ₪" + String.format("%,d", rentByLevel[level + 1]) + "\n"
+            + "Your money: ₪" + String.format("%,d", player.getMoney()),
             "Upgrade Property?", JOptionPane.YES_NO_OPTION);
 
         if (choice == JOptionPane.YES_OPTION) {
@@ -165,17 +165,33 @@ public class PropertyTile implements Tile {
         String wcNote = wcMultiplier > 1 ? " [WC x" + wcMultiplier + "]" : "";
         try {
             player.pay(rent);
-            owner.receive(rent);
-            if (player instanceof HumanPlayer) {
-                JOptionPane.showMessageDialog(null,
-                    player.getName() + " paid ₪" + rent + " rent to " + owner.getName()
-                    + " for " + name + " (" + getLevelName() + ")" + wcNote);
-            }
         } catch (InsufficientFundsException e) {
-            player.setBankrupt(true);
+            if (player instanceof HumanPlayer && ((HumanPlayer) player).trySellPropertiesToPay(rent)) {
+                try { player.pay(rent); }
+                catch (InsufficientFundsException e2) { player.setBankrupt(true); }
+            } else {
+                player.setBankrupt(true);
+            }
+        }
+        if (player.isBankrupt()) {
             if (player instanceof HumanPlayer) {
                 JOptionPane.showMessageDialog(null,
                     player.getName() + " went bankrupt paying rent on " + name + "!");
+            } else if (owner instanceof BotPlayer) {
+                JOptionPane.showMessageDialog(null,
+                    "[Bot] " + owner.getName() + " — " + player.getName()
+                    + " went bankrupt on " + name + "!");
+            }
+        } else {
+            owner.receive(rent);
+            if (player instanceof HumanPlayer) {
+                JOptionPane.showMessageDialog(null,
+                    player.getName() + " paid ₪" + String.format("%,d", rent) + " rent to " + owner.getName()
+                    + " for " + name + " (" + getLevelName() + ")" + wcNote);
+            } else if (owner instanceof BotPlayer) {
+                JOptionPane.showMessageDialog(null,
+                    "[Bot] " + owner.getName() + " collected ₪" + String.format("%,d", rent) + " rent from "
+                    + player.getName() + " on " + name + " (" + getLevelName() + ")" + wcNote);
             }
         }
     }
@@ -196,6 +212,10 @@ public class PropertyTile implements Tile {
 
     public int getUpgradeCost() {
         return (level >= 3) ? hotelCost : houseCost;
+    }
+
+    public int getSellValue() {
+        return (int)(getPurchaseCost(level) * 0.75);
     }
 
     public String getLevelName() {

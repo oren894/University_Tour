@@ -238,8 +238,7 @@ public class SidebarPanel extends JPanel {
     public void updateDisplay(ArrayList<Player> players, Player current, int round) {
         statsPanel.removeAll();
 
-        JLabel header = new JLabel("ROUND " + round
-            + (game != null ? " / " + game.getMaxRounds() : ""));
+        JLabel header = new JLabel("ROUND " + round);
         header.setFont(new Font("SansSerif", Font.BOLD, 11));
         header.setForeground(GOLD);
         header.setAlignmentX(LEFT_ALIGNMENT);
@@ -292,41 +291,6 @@ public class SidebarPanel extends JPanel {
             row.add(info, BorderLayout.CENTER);
             statsPanel.add(row);
 
-            // ── Property list under the player row ────────────────────────────
-            java.util.ArrayList<tiles.PropertyTile> props = p.getOwnedProperties();
-            for (tiles.PropertyTile pt : props) {
-                final java.awt.Color propColor = pt.getGroupColor();
-                JPanel propRow = new JPanel(new BorderLayout(4, 0));
-                propRow.setBackground(new Color(28, 28, 50));
-                propRow.setBorder(BorderFactory.createEmptyBorder(1, 22, 1, 4));
-                propRow.setAlignmentX(LEFT_ALIGNMENT);
-                propRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
-
-                // color swatch
-                JPanel swatch = new JPanel() {
-                    @Override protected void paintComponent(Graphics g) {
-                        super.paintComponent(g);
-                        if (propColor != null) {
-                            g.setColor(propColor);
-                            g.fillRect(0, 2, 10, 10);
-                        }
-                    }
-                };
-                swatch.setPreferredSize(new Dimension(12, 14));
-                swatch.setOpaque(false);
-                propRow.add(swatch, BorderLayout.WEST);
-
-                String lvl = pt.getLevel() == 0 ? "L"
-                    : pt.getLevel() == 4 ? "H" : pt.getLevel() + "H";
-                JLabel propLabel = new JLabel(
-                    truncate(pt.getName(), 14) + "  " + lvl + "  ₪" + pt.getRent());
-                propLabel.setFont(new Font("Monospaced", Font.PLAIN, 9));
-                propLabel.setForeground(new Color(170, 200, 170));
-                propRow.add(propLabel, BorderLayout.CENTER);
-
-                statsPanel.add(propRow);
-            }
-
             if (i < players.size() - 1) statsPanel.add(Box.createVerticalStrut(3));
         }
 
@@ -356,7 +320,7 @@ public class SidebarPanel extends JPanel {
             int cost = pt.getPurchaseCost(i);
             boolean canAfford = playerMoney >= cost;
             boolean available = canAfford && (i < 3 || canBuy3);
-            purchaseBtns[i].setText(labels[i] + "  —  ₪" + cost + "  (rent ₪" + rents[i] + ")");
+            purchaseBtns[i].setText(labels[i] + "  —  ₪" + String.format("%,d", cost) + "  (rent ₪" + String.format("%,d", rents[i]) + ")");
             purchaseBtns[i].setEnabled(available);
             purchaseBtns[i].setBackground(available ? lvlColors[i] : new Color(50, 50, 75));
         }
@@ -384,7 +348,7 @@ public class SidebarPanel extends JPanel {
             int cost    = pt.getUpgradeCost();
             int newRent = pt.getRentByLevel()[pt.getLevel() + 1];
             upgradeNextLabel.setText("→ " + pt.getNextLevelName()
-                + "  ₪" + cost + "  (rent ₪" + newRent + ")");
+                + "  ₪" + String.format("%,d", cost) + "  (rent ₪" + String.format("%,d", newRent) + ")");
             upgradeConfirmBtn.setEnabled(true);
             upgradeConfirmBtn.setBackground(new Color(45, 155, 75));
         }

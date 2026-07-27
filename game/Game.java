@@ -5,6 +5,7 @@ import java.util.Collections;
 import javax.swing.JOptionPane;
 import players.Player;
 import players.HumanPlayer;
+import players.BotPlayer;
 import cards.EventCard;
 import cards.BonusCard;
 import cards.PenaltyCard;
@@ -15,7 +16,6 @@ public class Game {
     private Board board;
     private Dice dice;
     private boolean gameOver;
-    private int maxRounds = 20;
     private int currentRound = 0;
 
     public Game() {
@@ -66,7 +66,14 @@ public class Game {
             String name = JOptionPane.showInputDialog("Enter name for Player " + (i + 1) + ":");
             if (name == null || name.trim().isEmpty())
                 name = "Player " + (i + 1);
-            players.add(new HumanPlayer(name.trim(), 2_000_000));
+
+            Object[] opts = {"Human", "Bot"};
+            int type = JOptionPane.showOptionDialog(null,
+                "Is " + name.trim() + " human or bot?", "Player Type",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                null, opts, opts[0]);
+            players.add(type == 1 ? new BotPlayer(name.trim(), 2_000_000)
+                                  : new HumanPlayer(name.trim(), 2_000_000));
         }
     }
 
@@ -85,7 +92,7 @@ public class Game {
 
     private void checkGameOver() {
         long active = players.stream().filter(p -> !p.isBankrupt()).count();
-        if (active <= 1 || currentRound >= maxRounds) {
+        if (active <= 1) {
             gameOver = true;
         }
     }

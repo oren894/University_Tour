@@ -33,8 +33,8 @@ public class WorldChampionshipsTile implements Tile {
             String[] options = new String[owned.size()];
             for (int i = 0; i < owned.size(); i++) {
                 PropertyTile p = owned.get(i);
-                options[i] = p.getName() + "  —  rent ₪" + p.getRent()
-                    + "  →  will become ₪" + (p.getRent() * globalMultiplier);
+                options[i] = p.getName() + "  —  rent ₪" + String.format("%,d", p.getRent())
+                    + "  →  will become ₪" + String.format("%,d", p.getRent() * globalMultiplier);
             }
 
             Object result = JOptionPane.showInputDialog(null,
