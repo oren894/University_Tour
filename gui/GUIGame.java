@@ -14,6 +14,8 @@ import cards.EventCard;
 import cards.PenaltyCard;
 import exceptions.InsufficientFundsException;
 
+// GUI equivalent of Game: drives turns through button clicks instead of blocking JOptionPane calls,
+// so the current state (below) tracks what UI the sidebar should show and what a click means right now.
 public class GUIGame {
 
     public enum State {

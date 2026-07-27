@@ -2,6 +2,7 @@ package game;
 
 import java.util.Random;
 
+// A pair of six-sided dice; remembers the last roll so callers can check for doubles.
 public class Dice {
     private Random random = new Random();
     private int d1, d2;

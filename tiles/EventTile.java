@@ -7,6 +7,7 @@ import cards.EventCard;
 import players.Player;
 import players.HumanPlayer;
 
+// "Chance" tile: draws a random card from the shared deck and applies its effect to the player.
 public class EventTile implements Tile {
     private String name;
     private ArrayList<EventCard> deck;

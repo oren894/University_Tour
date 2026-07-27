@@ -7,6 +7,7 @@ import game.Dice;
 import tiles.PropertyTile;
 import tiles.ShuttleStationTile;
 
+// Player controlled via JOptionPane dialogs; makes its own buy/sell/jail decisions through the UI.
 public class HumanPlayer extends Player {
 
     public HumanPlayer(String name, int startingMoney) {
@@ -17,6 +18,7 @@ public class HumanPlayer extends Player {
         this.ownedStations = new ArrayList<>();
     }
 
+    // Prompts the player to sell owned properties/stations one at a time until the debt is covered.
     public boolean trySellPropertiesToPay(int amount) {
         while (money < amount) {
             if (ownedProperties.isEmpty() && ownedStations.isEmpty()) return false;

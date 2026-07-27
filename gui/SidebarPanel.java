@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import players.Player;
 import tiles.PropertyTile;
 
+// Right-hand panel: player stats, dice, action log, and the context panels (buy/upgrade/collect/station).
 public class SidebarPanel extends JPanel {
 
     // ── Colours ───────────────────────────────────────────────────────────────

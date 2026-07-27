@@ -7,6 +7,7 @@ import tiles.PropertyTile;
 import tiles.ShuttleStationTile;
 import exceptions.InsufficientFundsException;
 
+// Shared state and behavior for human and bot players; concrete subclasses implement takeTurn().
 public abstract class Player implements Comparable<Player>, Cloneable {
     protected String name;
     protected int money;
@@ -23,7 +24,7 @@ public abstract class Player implements Comparable<Player>, Cloneable {
     public void move(int steps) {
         int oldPosition = position;
         position = (position + steps) % 36;
-        if (position < oldPosition) {
+        if (position < oldPosition) { // wrapped past Start
             receive(200_000);
             completedFirstLap = true;
         }
@@ -76,6 +77,7 @@ public abstract class Player implements Comparable<Player>, Cloneable {
     @Override
     public Player clone() throws CloneNotSupportedException {
         Player copy = (Player) super.clone();
+        // Deep-copy the owned-tile lists so the clone doesn't share state with the original.
         copy.ownedProperties = new ArrayList<>(this.ownedProperties);
         copy.ownedStations = new ArrayList<>(this.ownedStations);
         return copy;

@@ -4,6 +4,7 @@ import javax.swing.JOptionPane;
 import players.Player;
 import players.HumanPlayer;
 
+// Landing here (not passing through) sends the player to jail for up to 3 turns.
 public class JailTile implements Tile {
 
     @Override

@@ -6,8 +6,10 @@ import players.Player;
 import players.HumanPlayer;
 import exceptions.InsufficientFundsException;
 
+// The Start tile: pays out ₪200,000 and, for human players, offers an optional roulette mini-game.
 public class StartTile implements Tile {
 
+    // Standard roulette color layout by number (index = number, 0 is green).
     private static final boolean[] IS_RED = {
         false, // 0 green
         true,  false, true,  false, true,  false, true,  false, true,  false, // 1-10
@@ -32,6 +34,7 @@ public class StartTile implements Tile {
         }
     }
 
+    // Walks the player through a bet type, an optional single-number pick, and a bet amount, then spins.
     private void playRoulette(HumanPlayer player) {
         String[] betTypes = {
             "Red (1:1)", "Black (1:1)",

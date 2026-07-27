@@ -5,8 +5,10 @@ import javax.swing.JOptionPane;
 import players.Player;
 import players.HumanPlayer;
 
+// Special tile: each landing bumps a shared rent multiplier and re-targets it onto one chosen property.
 public class WorldChampionshipsTile implements Tile {
 
+    // Static: the effect is global to the board, not per-tile-instance.
     private static int globalMultiplier = 1;
     private static PropertyTile wcProperty = null;
 

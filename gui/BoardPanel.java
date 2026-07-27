@@ -6,6 +6,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import players.Player;
 
+// Draws the 36-tile board, player tokens, and ownership/building overlays.
 public class BoardPanel extends JPanel {
 
     // Board geometry
