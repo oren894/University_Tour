@@ -7,6 +7,7 @@ import players.Player;
 import tiles.PropertyTile;
 import tiles.ShuttleStationTile;
 
+// Lets a player check off owned properties/stations to sell until a required debt amount is covered.
 public class SellPropertiesDialog extends JDialog {
 
     private static final Color BG      = new Color(18, 18, 42);

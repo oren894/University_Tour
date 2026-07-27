@@ -8,6 +8,7 @@ import players.BotPlayer;
 import players.HumanPlayer;
 import exceptions.InsufficientFundsException;
 
+// A purchasable/upgradeable course tile: land → 1/2/3 houses → hotel, each level with its own rent.
 public class PropertyTile implements Tile {
 
     private String name;

@@ -6,6 +6,7 @@ import game.Dice;
 import tiles.PropertyTile;
 import exceptions.InsufficientFundsException;
 
+// Player controlled automatically; rolls, moves, and decides purchases with a simple money heuristic.
 public class BotPlayer extends Player {
 
     public BotPlayer(String name, int startingMoney) {
@@ -50,6 +51,7 @@ public class BotPlayer extends Player {
         board.getTile(position).landOn(this);
     }
 
+    // Simple heuristic: only buy if it won't eat more than 40% of current cash.
     public boolean wantsToBuy(PropertyTile property) {
         return property.getPrice() < money * 0.4;
     }

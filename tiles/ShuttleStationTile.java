@@ -6,10 +6,11 @@ import players.HumanPlayer;
 import players.BotPlayer;
 import exceptions.InsufficientFundsException;
 
+// A purchasable station tile; rent scales with how many stations the same owner controls.
 public class ShuttleStationTile implements Tile {
 
     private static final int PRICE = 200_000;
-    private static final int[] RENT = {25_000, 50_000, 100_000, 200_000};
+    private static final int[] RENT = {25_000, 50_000, 100_000, 200_000}; // rent by stations owned (1-4)
 
     private String name;
     private Player owner;

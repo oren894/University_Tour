@@ -8,6 +8,7 @@ import players.Player;
 import players.HumanPlayer;
 import exceptions.InsufficientFundsException;
 
+// Lets a human player pay a toll to teleport to any property/station tile they own or that's unowned.
 public class AirportTile implements Tile {
 
     private static final int TOLL = 100_000;

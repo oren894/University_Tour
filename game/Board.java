@@ -12,6 +12,7 @@ import tiles.ShuttleStationTile;
 import tiles.EventTile;
 import cards.EventCard;
 
+// Owns the 36 tiles of the board (4 sides of 9, themed corner every 9 tiles) and builds them from the chance deck.
 public class Board {
     private ArrayList<Tile> tiles;
 
@@ -82,7 +83,7 @@ public class Board {
     }
 
     public Tile getTile(int position) {
-        return tiles.get(position % 36);
+        return tiles.get(position % 36); // wrap around the board
     }
 
     public int getSize() { return tiles.size(); }

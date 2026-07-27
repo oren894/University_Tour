@@ -5,6 +5,7 @@ import java.awt.*;
 import players.Player;
 import tiles.PropertyTile;
 
+// Top-level Swing frame: hosts the board and sidebar panels and forwards UI updates from GUIGame to them.
 public class GameWindow extends JFrame {
 
     private final BoardPanel   boardPanel;

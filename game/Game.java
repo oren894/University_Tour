@@ -11,6 +11,7 @@ import cards.BonusCard;
 import cards.PenaltyCard;
 import exceptions.InvalidPlayerCountException;
 
+// Console/JOptionPane game loop: sets up players and board, runs turns until one player remains, then shows results.
 public class Game {
     private ArrayList<Player> players;
     private Board board;
@@ -114,6 +115,7 @@ public class Game {
         players.forEach(System.out::println);
     }
 
+    // Case-insensitive lookup by name.
     public Player findPlayer(String name) {
         return players.stream()
             .filter(p -> p.getName().equalsIgnoreCase(name))
@@ -121,10 +123,12 @@ public class Game {
             .orElse(null);
     }
 
+    // Sorts by money via Player's Comparable implementation.
     public void sortByWealth() {
         Collections.sort(players);
     }
 
+    // Deep-clones the player list (each Player via its own clone()).
     public ArrayList<Player> clonePlayers() throws CloneNotSupportedException {
         ArrayList<Player> copy = new ArrayList<>();
         for (Player p : players) copy.add(p.clone());

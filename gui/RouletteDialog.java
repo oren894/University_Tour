@@ -7,6 +7,7 @@ import java.awt.geom.*;
 import java.util.Random;
 import players.Player;
 
+// Animated roulette wheel dialog for the Start-tile mini-game (GUI counterpart of StartTile's playRoulette()).
 public class RouletteDialog extends JDialog {
 
     private static final boolean[] IS_RED = new boolean[37];
